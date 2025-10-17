@@ -7,6 +7,10 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from datetime import datetime
 import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
@@ -63,11 +67,37 @@ def get_time():
 @app.route('/api/echo', methods=['POST'])
 def echo():
     """Echo service - returns the posted data"""
-    data = request.get_json()
+    try:
+        data = request.get_json(force=False)
+        
+        # Validate that JSON data was provided
+        if data is None:
+            return jsonify({
+                'error': 'Bad request',
+                'message': 'No JSON data provided or invalid JSON format',
+                'status': 400
+            }), 400
+        
+        return jsonify({
+            'received': data,
+            'timestamp': datetime.utcnow().isoformat()
+        })
+    except Exception as e:
+        return jsonify({
+            'error': 'Bad request',
+            'message': 'Invalid JSON format',
+            'status': 400
+        }), 400
+
+
+@app.errorhandler(400)
+def bad_request(error):
+    """Handle 400 errors"""
     return jsonify({
-        'received': data,
-        'timestamp': datetime.utcnow().isoformat()
-    })
+        'error': 'Bad request',
+        'message': 'The request was invalid or malformed',
+        'status': 400
+    }), 400
 
 
 @app.errorhandler(404)
@@ -78,6 +108,16 @@ def not_found(error):
         'message': 'The requested resource was not found',
         'status': 404
     }), 404
+
+
+@app.errorhandler(415)
+def unsupported_media_type(error):
+    """Handle 415 errors"""
+    return jsonify({
+        'error': 'Unsupported media type',
+        'message': 'Content-Type must be application/json',
+        'status': 415
+    }), 415
 
 
 @app.errorhandler(500)
