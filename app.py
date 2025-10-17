@@ -67,6 +67,8 @@ def get_time():
 @app.route('/api/echo', methods=['POST'])
 def echo():
     """Echo service - returns the posted data"""
+    from werkzeug.exceptions import BadRequest, UnsupportedMediaType
+    
     try:
         data = request.get_json(force=False)
         
@@ -82,22 +84,12 @@ def echo():
             'received': data,
             'timestamp': datetime.utcnow().isoformat()
         })
-    except Exception as e:
+    except (BadRequest, UnsupportedMediaType, ValueError, UnicodeDecodeError) as e:
         return jsonify({
             'error': 'Bad request',
             'message': 'Invalid JSON format',
             'status': 400
         }), 400
-
-
-@app.errorhandler(400)
-def bad_request(error):
-    """Handle 400 errors"""
-    return jsonify({
-        'error': 'Bad request',
-        'message': 'The request was invalid or malformed',
-        'status': 400
-    }), 400
 
 
 @app.errorhandler(404)
