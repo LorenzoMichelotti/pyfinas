@@ -134,6 +134,20 @@ flask --app app run --debug
 
 ## Testing
 
+### Automated Tests
+
+Run the test suite (requires the Flask server to be running):
+
+```bash
+# In one terminal, start the server
+python app.py
+
+# In another terminal, run the tests
+python test_api.py
+```
+
+### Manual Testing with curl
+
 You can test the API using curl:
 
 ```bash
